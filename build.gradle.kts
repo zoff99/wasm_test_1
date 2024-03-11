@@ -31,9 +31,12 @@ val compileNativeSources by tasks.creating(Exec::class) {
 }
 
 val copyNativeBinariesAndGlueCode by tasks.creating(Copy::class) {
-    dependsOn(compileNativeSources)
+    // dependsOn(compileNativeSources)
 
-    from("./build/clang/lib.wasm")
+    // from("./build/clang/lib.wasm")
+
+    from(".src/wasmJsMain/kotlin/lib.js")
+    from(".src/wasmJsMain/kotlin/lib.wasm")
     from("./src/nativeSources/lib.c.mjs")
 
     val taskName = if (project.hasProperty("isProduction")
