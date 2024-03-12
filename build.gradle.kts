@@ -1,10 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
 import org.jetbrains.kotlin.gradle.targets.js.ir.DefaultIncrementalSyncTask
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
-import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
-import java.util.*
 
 plugins {
     kotlin("multiplatform") version "1.9.22"
@@ -21,22 +16,23 @@ kotlin {
     }
 }
 
-val props = Properties().apply {
-    file("local.properties").inputStream().use(::load)
-}
-
 val compileNativeSources by tasks.creating(Exec::class) {
-    commandLine(props.getProperty("PATH_TO_CLANG") ?: error("Provide PATH_TO_CLANG inside local.properties file"), "--target=wasm32", "-nostdlib", "-Wl,--export-all", "-Wl,--no-entry", "-o", "build/clang/lib.wasm", "src/nativeSources/lib.c")
-    outputs.file("build/clang/lib.wasm")
+    commandLine(
+        "emcc", "--no-entry", "-s", "IGNORE_MISSING_MAIN=1", "-s", "MODULARIZE=1",
+        "-s", "ERROR_ON_UNDEFINED_SYMBOLS=1", "-s", "LLD_REPORT_UNDEFINED", "-s", "ENVIRONMENT=web",
+        "-s", "EXIT_RUNTIME=0",
+        "-s", "MALLOC=emmalloc",
+        "-o", "build/emcc/lib.emcc.js", "src/nativeSources/lib.c"
+    )
+
+    outputs.files("build/emcc/lib.emcc.wasm", "build/emcc/lib.emcc.js")
 }
 
 val copyNativeBinariesAndGlueCode by tasks.creating(Copy::class) {
-    // dependsOn(compileNativeSources)
+     dependsOn(compileNativeSources)
 
-    // from("./build/clang/lib.wasm")
-
-    from(".src/wasmJsMain/kotlin/lib.js")
-    from(".src/wasmJsMain/kotlin/lib.wasm")
+    from("./build/emcc/lib.emcc.wasm")
+    from("./build/emcc/lib.emcc.js")
     from("./src/nativeSources/lib.c.mjs")
 
     val taskName = if (project.hasProperty("isProduction")
@@ -53,13 +49,4 @@ val copyNativeBinariesAndGlueCode by tasks.creating(Copy::class) {
 
 tasks.withType<Kotlin2JsCompile>().configureEach {
     dependsOn(copyNativeBinariesAndGlueCode)
-}
-
-rootProject.the<NodeJsRootExtension>().apply {
-    nodeVersion = "21.0.0-v8-canary202309143a48826a08"
-    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
-}
-
-tasks.withType<KotlinNpmInstallTask>().configureEach {
-    args.add("--ignore-engines")
 }

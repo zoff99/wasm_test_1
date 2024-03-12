@@ -1,9 +1,3 @@
-async function instantiate(imports={}, runInitializer=true) {
-    const wasmFilePath = './lib.wasm';
-    const wasmInstance = (await WebAssembly.instantiateStreaming(fetch(wasmFilePath), {})).instance;
-    const wasmExports = wasmInstance.exports
+import Module from "./lib.emcc.js"
 
-    return { instance: wasmInstance,  exports: wasmExports };
-}
-
-export default (await instantiate()).exports;
+export default await Module()
