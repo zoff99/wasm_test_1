@@ -25,7 +25,7 @@ val compileNativeSources by tasks.creating(Exec::class) {
         "-o", "build/emcc/lib.emcc.js", "src/nativeSources/lib.c"
     )
 
-    outputs.files("build/emcc/lib.wasm", "build/emcc/lib.emcc.js")
+    outputs.files("build/emcc/lib.emcc.wasm", "build/emcc/lib.emcc.js")
 }
 
 val copyNativeBinariesAndGlueCode by tasks.creating(Copy::class) {
