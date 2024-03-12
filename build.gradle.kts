@@ -29,10 +29,13 @@ val compileNativeSources by tasks.creating(Exec::class) {
 }
 
 val copyNativeBinariesAndGlueCode by tasks.creating(Copy::class) {
-     dependsOn(compileNativeSources)
+    // dependsOn(compileNativeSources)
 
-    from("./build/emcc/lib.emcc.wasm")
-    from("./build/emcc/lib.emcc.js")
+    from("./src/nativeSources/lib.emcc.wasm")
+    from("./src/nativeSources/lib.emcc.js")
+
+    // from("./build/emcc/lib.emcc.wasm")
+    // from("./build/emcc/lib.emcc.js")
     from("./src/nativeSources/lib.c.mjs")
 
     val taskName = if (project.hasProperty("isProduction")
