@@ -1,6 +1,5 @@
-#include <stdint.h>
+#include <emscripten.h>
 
-__attribute__((visibility("default")))
-int add(int a, int b) {
+int EMSCRIPTEN_KEEPALIVE add(int a, int b) {
     return a + b;
 }
